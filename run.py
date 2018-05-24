@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect
 
 app = Flask(__name__)
 
@@ -9,16 +9,28 @@ messages = []
 def get_index():
     return render_template("index.html")
     
-    
-    
+@app.route("/login")
+def do_login():
+    username = request.args['username']
+    return redirect(username)
+ 
 @app.route("/<username>") 
 def get_userpage(username):
-    return str(messages)
+    return render_template("chat.html", logged_in_as=username, all_the_messages=messages)
     
-@app.route("/<username>/<message>") 
-def add_message(username,message):
-    message = "<strong>{0}:</strong> {1}".format(username,message)
+
+    
+@app.route("/new", methods=["POST"]) 
+def add_message():
+    username = request.form['username']
+    text= request.form['message']
+    
+    message = {
+        'sender': username,
+        'body': text
+    }
+   
     messages.append(message)
-    return str(messages)
+    return redirect(username)
 
 app.run(host=os.getenv('IP'), port=int(os.getenv('PORT')), debug=True)
